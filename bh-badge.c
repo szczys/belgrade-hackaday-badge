@@ -11,10 +11,38 @@ void* nullptr;
 SDL_Window *win;
 SDL_Renderer *ren;
 
-//These values are specific to the SDL2 emulator
+//These display size values are specific to the SDL2 emulator
 #define PIXELRADIUS     8      
 #define PIXELSPACING    5
 
+//These color values are specific to the SDL2 emulator
+//Color definitions
+#define BLUE    0
+#define YELLOW  1
+#define RED     2
+#define PINK    3
+#define ORANGE  4
+#define CYAN    5
+#define BLACK   6
+#define GREY    7
+#define WHITE   8
+#define LAVENDAR  9
+#define GREEN   10
+
+//Color values
+static const uint8_t colors[][3] = {
+    { 0, 0, 255 },      //Blue
+    { 255, 255, 0 },    //Yellow
+    { 255, 0, 0 },      //Red
+    { 255, 153, 204 },  //Pink
+    { 255, 102, 0 },    //Orange
+    { 0, 255, 255 },    //Cyan
+    { 0, 0, 0 },        //Black
+    { 64, 64, 64 },     //Grey
+    { 255, 255, 255 },  //White
+    { 196, 64, 255},    //Lavendar
+    { 0, 255, 0}        //Green
+};
 
 void initDisplay(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -43,7 +71,7 @@ void initDisplay(void) {
     //Write grey cirles (LEDs in off state)
     for (uint8_t i=0; i<TOTPIXELX; i++) {
         for (uint8_t j=0; j<TOTPIXELY; j++) {
-            displayPixel(i,j,GREY);
+            displayPixel(i,j,OFF);
         }
     }
 }
@@ -53,17 +81,9 @@ void displayClear(uint8_t color) {
     SDL_RenderClear(ren);
 }
 
-void displayPixel(uint8_t x, uint8_t y, uint8_t color) {
-    /*
-    SDL_Rect rect;
-    rect.x = (x*(PIXELMULTIPLE+PIXELSPACING))+PIXELSPACING;
-    rect.y = (y*(PIXELMULTIPLE+PIXELSPACING))+PIXELSPACING;
-    rect.w = PIXELMULTIPLE;
-    rect.h = PIXELMULTIPLE;
-
-    SDL_SetRenderDrawColor(ren, 0, 0, 255, 255);
-    SDL_RenderFillRect(ren, &rect);
-    */
+void displayPixel(uint8_t x, uint8_t y, uint8_t state) {
+    uint8_t color = GREY;
+    if (state) { color = RED; }
     filledCircleRGBA(
         ren,
         (x*(PIXELRADIUS+PIXELRADIUS+PIXELSPACING))+PIXELRADIUS+PIXELSPACING,

@@ -19,7 +19,7 @@ void advanceFiller(void) {
     triggerTime = getTime() + FILLERDELAY;
     
     //Manipulate the display
-    displayPixel(i,j,RED);
+    displayPixel(i,j,ON);
     displayLatch();
     
     //Advance tracking for next round
