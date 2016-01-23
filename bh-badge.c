@@ -11,8 +11,7 @@ void* nullptr;
 SDL_Window *win;
 SDL_Renderer *ren;
 
-#define TOTPIXELX       8
-#define TOTPIXELY       16
+//These values are specific to the SDL2 emulator
 #define PIXELRADIUS     8      
 #define PIXELSPACING    5
 
@@ -40,6 +39,13 @@ void initDisplay(void) {
     }
     
     displayClear(BLACK);
+    
+    //Write grey cirles (LEDs in off state)
+    for (uint8_t i=0; i<TOTPIXELX; i++) {
+        for (uint8_t j=0; j<TOTPIXELY; j++) {
+            displayPixel(i,j,GREY);
+        }
+    }
 }
 
 void displayClear(uint8_t color) {
@@ -115,16 +121,9 @@ void controlDelayMs(uint16_t ms) {
 
 int main(void) {
     initDisplay();
-
-    for (uint8_t i=0; i<TOTPIXELX; i++) {
-        for (uint8_t j=0; j<TOTPIXELY; j++) {
-            displayPixel(i,j,RED);
-        }
-    }
-    
-    displayPixel(2,2,GREY);
-
     displayLatch();
+    
+    animateBadge();
 
     while(1) {
         if (getControl() == ESCAPE) {

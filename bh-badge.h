@@ -1,5 +1,8 @@
 #include <inttypes.h>
 
+#define TOTPIXELX       8
+#define TOTPIXELY       16
+
 //Color definitions
 #define BLUE    0
 #define YELLOW  1
