@@ -128,12 +128,5 @@ int main(void) {
     displayLatch();
     
     animateBadge();
-
-    while(1) {
-        if (getControl() == ESCAPE) {
-            displayClose();
-            return 0;
-        }
-        controlDelayMs(10);
-    }
+    return 0;
 }

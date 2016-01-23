@@ -5,7 +5,7 @@
 uint8_t i=0;
 uint8_t j=0;
 uint32_t triggerTime = 0;
-fillerFlag = 0;
+uint8_t fillerFlag = 0;
 
 void startFiller(void) {
     triggerTime = getTime();
@@ -36,9 +36,15 @@ void advanceFiller(void) {
 
 void animateBadge(void) {
     startFiller();
-    while(fillerFlag) {
-        if (getTime() >= triggerTime) {
-            advanceFiller();
+    while(1) {
+        if (fillerFlag) {
+            if (getTime() >= triggerTime) {
+                advanceFiller();
+            }
+        }
+        if (getControl() == ESCAPE) {
+            displayClose();
+            return;
         }
     }
 }
