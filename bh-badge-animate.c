@@ -2,14 +2,21 @@
 
 #define FILLERDELAY 100
 
+//State definitions
+#define NO_STATE        0
+#define FILLER_STATE    1
+#define HATCHING_STATE  2
+#define SQUARE_STATE    3
+
 uint8_t i=0;
 uint8_t j=0;
 uint32_t triggerTime = 0;
-uint8_t fillerFlag = 0;
+uint8_t stateFlag = NO_STATE;
 
 void startFiller(void) {
+    displayClear();
     triggerTime = getTime();
-    fillerFlag = 1;
+    stateFlag = FILLER_STATE;
     i=0;
     j=0;
 }
@@ -30,21 +37,61 @@ void advanceFiller(void) {
     
     //Check to see if we've overflowed
     if (j >= TOTPIXELY) {
-        fillerFlag = 0;
+        stateFlag = NO_STATE;
     }
+}
+
+void showHatching(void) {
+    displayClear();
+    for (uint8_t x=0; x<TOTPIXELX; x++) {
+        for (uint8_t y=0; y<TOTPIXELY; y++) {
+            if (((x%2) + (y%2)) == 1) { displayPixel(x, y, ON); }
+        } 
+    }
+    displayLatch();
+}
+
+void showSquare(void) {
+    displayClear();
+    for (uint8_t x=2; x<6; x++) {
+        for (uint8_t y=6; y<10; y++) {
+            displayPixel(x, y, ON);
+        } 
+    }
+    displayLatch();
 }
 
 void animateBadge(void) {
     startFiller();
     while(1) {
-        if (fillerFlag) {
-            if (getTime() >= triggerTime) {
-                advanceFiller();
-            }
+        switch (stateFlag) {
+            case FILLER_STATE:
+                if (getTime() >= triggerTime) {
+                    advanceFiller();
+                }
+                break;
+            case HATCHING_STATE:
+                showHatching();
+                stateFlag = NO_STATE;
+                break;
+            case SQUARE_STATE:
+                showSquare();
+                stateFlag = NO_STATE;
+                break;
         }
-        if (getControl() == ESCAPE) {
-            displayClose();
-            return;
+        switch (getControl()) {
+            case (ESCAPE):
+                displayClose();
+                return;
+            case (LEFT):
+                startFiller();
+                break;
+            case (DOWN):
+                stateFlag = HATCHING_STATE;
+                break;
+            case (RIGHT):
+                stateFlag = SQUARE_STATE;
+                break;
         }
     }
 }

@@ -23,20 +23,21 @@ extern "C"{
 
 
 /*---- Display Prototypes ----*/
-void initDisplay(void);
-void displayClear(void);
-void displayPixel(uint8_t x, uint8_t y, uint8_t state);
-void displayClose(void);
-void displayLatch(void);
+void initDisplay(void);             //Turn on display and set all LEDs off
+void displayClear(void);            //Turn all LEDs off
+void displayPixel(uint8_t x, uint8_t y, uint8_t state); //Set LED to state (ON|OFF)
+void displayClose(void);            //Close the display (used for SDL2 emulator window)
+void displayLatch(void);            //Make display changes visible (can be used for a framebuffer)
 /*--------------------*/
 
 
 
 /*---- Control Prototypes ----*/
-void initControl(void);
-uint8_t getControl(void);
-uint32_t getTime(void);
-void controlDelayMs(uint16_t ms);
+void initControl(void);             //Setup button input
+uint8_t getControl(void);           //Return last pressed button
+void initTime(void);                //Initialize timekeeping hardware
+uint32_t getTime(void);             //Return milliseconds (upcounting)
+void controlDelayMs(uint16_t ms);   //Delay milliseconds (blocking)
 
 #ifdef __cplusplus
 } // extern "C"

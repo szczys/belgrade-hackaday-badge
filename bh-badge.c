@@ -138,6 +138,10 @@ uint8_t getControl(void) {
     return NOINPUT;
 }
 
+void initTime(void) {
+    //Not needed for SDL2 emulator but will be for actual hardware
+}
+
 uint32_t getTime(void) {
     return SDL_GetTicks();
 }
@@ -148,6 +152,7 @@ void controlDelayMs(uint16_t ms) {
 
 int main(void) {
     initDisplay();
+    initTime();
     displayLatch();
     
     animateBadge();
