@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "bh-badge.h"
+#include "bh-badge-animate.h"
 #include <SDL2/SDL.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
@@ -65,20 +66,22 @@ void initDisplay(void) {
     if (ren == nullptr) {
         printf("SDL_CreateRenderer Error: %s\n", SDL_GetError());
     }
+
+    displayClear();
     
-    displayClear(BLACK);
+}
+
+void displayClear(void) {
+
+    SDL_SetRenderDrawColor(ren, colors[BLACK][0], colors[BLACK][1], colors[BLACK][2], 255);
+    SDL_RenderClear(ren);
     
-    //Write grey cirles (LEDs in off state)
+    //Turn all LEDs to off state
     for (uint8_t i=0; i<TOTPIXELX; i++) {
         for (uint8_t j=0; j<TOTPIXELY; j++) {
             displayPixel(i,j,OFF);
         }
     }
-}
-
-void displayClear(uint8_t color) {
-    SDL_SetRenderDrawColor(ren, colors[color][0], colors[color][1], colors[color][2], 255);
-    SDL_RenderClear(ren);
 }
 
 void displayPixel(uint8_t x, uint8_t y, uint8_t state) {

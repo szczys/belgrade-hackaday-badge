@@ -24,8 +24,7 @@ extern "C"{
 
 /*---- Display Prototypes ----*/
 void initDisplay(void);
-void displayClear(uint8_t color);
-void displayGameOver(void);
+void displayClear(void);
 void displayPixel(uint8_t x, uint8_t y, uint8_t state);
 void displayClose(void);
 void displayLatch(void);
