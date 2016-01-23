@@ -8,7 +8,7 @@ This badge has an 8x16 red LED matrix on it. This is project is a set of alterna
 
 ---
 
-I'm currenlty developing code an emulator of the display I made using SDL2. It's simply a grid of circles actings as the pixels of the LED display.
+I'm currenlty developing code on an emulator of the display I made using SDL2. It's simply a grid of circles acting as the pixels of the LED display.
 
 ### To run the game emulator
 
