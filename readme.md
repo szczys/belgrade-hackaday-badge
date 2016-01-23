@@ -12,6 +12,8 @@ I'm currenlty developing code an emulator of the display I made using SDL2. It's
 
 ### To run the game emulator
 
+
+<img align="right" src="doc/badge-emulator.gif">
 Install the SDL2 and SDL2_gfx libraries:
 
 ```sudo apt-get install libsdl2-dev```
