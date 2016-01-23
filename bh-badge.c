@@ -115,6 +115,10 @@ uint8_t getControl(void) {
     return NOINPUT;
 }
 
+uint32_t getTime(void) {
+    return SDL_GetTicks();
+}
+
 void controlDelayMs(uint16_t ms) {
     SDL_Delay(ms);
 }

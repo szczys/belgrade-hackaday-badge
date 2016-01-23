@@ -60,6 +60,7 @@ void displayLatch(void);
 /*---- Control Prototypes ----*/
 void initControl(void);
 uint8_t getControl(void);
+uint32_t getTime(void);
 void controlDelayMs(uint16_t ms);
 
 #ifdef __cplusplus
