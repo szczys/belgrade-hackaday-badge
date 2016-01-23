@@ -3,13 +3,13 @@ test:
 	make run;
 
 build:
-	gcc -std=c99 -c sdlTest.c;
-	gcc sdlTest.o -o sdlTest -lSDL2 -lSDL2_gfx;
+	gcc -std=c99 -c bh-badge.c bh-badge-animate.c;
+	gcc bh-badge.o bh-badge-animate.o -o bh-badge -lSDL2 -lSDL2_gfx;
 
 run:
-	./sdlTest;
+	./bh-badge;
 
 clean:
-	-rm sdlTest;
+	-rm bh-badge;
 	-rm *.o;
 	-rm *~
