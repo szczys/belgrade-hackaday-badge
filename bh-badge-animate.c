@@ -2,6 +2,7 @@
 #include "font5x8.h"
 
 #define FILLERDELAY 100
+#define HORIZONTALSCROLL_DELAY  100
 
 uint8_t testword[20] = "Hackaday";
 
@@ -10,13 +11,18 @@ typedef enum {
     NO_STATE,
     FILLER_STATE,
     HATCHING_STATE,
-    CHASER_STATE
+    CHASER_STATE,
+    HORIZONTALSCROLL_STATE
 } stateEnum;
 
-uint8_t i=0;
-uint8_t j=0;
+
+uint8_t filler_i=0;
+uint8_t filler_j=0;
+
 uint32_t triggerTime = 0;
 uint8_t stateFlag = NO_STATE;
+
+uint8_t versatileCounter = 0;   //This may be used by any function
 
 uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -68,11 +74,10 @@ uint8_t getMessageLen(uint8_t *msg) {
 void showTextSlice(uint8_t startSlice, uint8_t *msg) {
 
     uint8_t colLength = getMessageLen(msg)*6;
-    uint8_t colToWrite = 0;
     
     //Fill correct columns in temp buffer
     uint8_t tempBuffer[8];
-    for (i=0; i<8; i++) {
+    for (uint8_t i=0; i<8; i++) {
         if (startSlice>=colLength) {
             //Handle writing past the end of the last char
             tempBuffer[i] = 0x00;
@@ -98,14 +103,29 @@ void showTextSlice(uint8_t startSlice, uint8_t *msg) {
             }
         }
     }
+    showBuffer();
+}
+
+void initHorizontalScroll(void) {
+    versatileCounter = 0;
+    clearBuffer();
+    triggerTime = getTime();
+    stateFlag = HORIZONTALSCROLL_STATE;
+    showBuffer();
+}
+
+void advanceHorizontalScroll(void) {
+    triggerTime = getTime() + HORIZONTALSCROLL_DELAY;
+    showTextSlice(versatileCounter, testword);
+    if (++versatileCounter >= getMessageLen(testword)*6) { versatileCounter = 0; }
 }
 
 void initFiller(void) {
     displayClear();
     triggerTime = getTime();
     stateFlag = FILLER_STATE;
-    i=0;
-    j=0;
+    filler_i=0;
+    filler_j=0;
 }
 
 void advanceFiller(void) {
@@ -113,17 +133,17 @@ void advanceFiller(void) {
     triggerTime = getTime() + FILLERDELAY;
     
     //Manipulate the display
-    displayPixel(i,j,ON);
+    displayPixel(filler_i,filler_j,ON);
     displayLatch();
     
     //Advance tracking for next round
-    if (++i >= TOTPIXELX) {
-        i = 0;
-        ++j;
+    if (++filler_i >= TOTPIXELX) {
+        filler_i = 0;
+        ++filler_j;
     } 
     
     //Check to see if we've overflowed
-    if (j >= TOTPIXELY) {
+    if (filler_j >= TOTPIXELY) {
         stateFlag = NO_STATE;
     }
 }
@@ -213,13 +233,19 @@ void animateBadge(void) {
                     advanceChaser();
                 }
                 break;
+            case HORIZONTALSCROLL_STATE:
+                if (getTime() >= triggerTime) {
+                    advanceHorizontalScroll();
+                }
+                break;
         }
         switch (getControl()) {
             case (ESCAPE):
                 displayClose();
                 return;
             case (LEFT):
-                initFiller();
+                //initFiller();
+                initHorizontalScroll();
                 break;
             case (DOWN):
                 //initHatching();
@@ -233,7 +259,7 @@ void animateBadge(void) {
                 
                 putChar(2,2,getMessageLen(&testword)+16);
                 */
-                showTextSlice(43, &testword);
+                showTextSlice(43, testword);
                 showBuffer();
                 break;
             case (RIGHT):
