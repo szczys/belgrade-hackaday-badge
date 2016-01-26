@@ -22,7 +22,7 @@ uint8_t filler_j=0;
 uint32_t triggerTime = 0;
 uint8_t stateFlag = NO_STATE;
 
-uint8_t versatileCounter = 0;   //This may be used by any function
+int8_t versatileCounter = 0;   //This may be used by any function
 
 uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -71,14 +71,14 @@ uint8_t getMessageLen(uint8_t *msg) {
     return i;
 }
 
-void showTextSlice(uint8_t startSlice, uint8_t *msg) {
+void showTextSlice(int8_t startSlice, uint8_t *msg) {
 
     uint8_t colLength = getMessageLen(msg)*6;
     
     //Fill correct columns in temp buffer
     uint8_t tempBuffer[8];
     for (uint8_t i=0; i<8; i++) {
-        if (startSlice>=colLength) {
+        if ((startSlice>=colLength) || (startSlice<0)) {
             //Handle writing past the end of the last char
             tempBuffer[i] = 0x00;
             ++startSlice;
@@ -107,7 +107,7 @@ void showTextSlice(uint8_t startSlice, uint8_t *msg) {
 }
 
 void initHorizontalScroll(void) {
-    versatileCounter = 0;
+    versatileCounter = -7;
     clearBuffer();
     triggerTime = getTime();
     stateFlag = HORIZONTALSCROLL_STATE;
@@ -117,7 +117,7 @@ void initHorizontalScroll(void) {
 void advanceHorizontalScroll(void) {
     triggerTime = getTime() + HORIZONTALSCROLL_DELAY;
     showTextSlice(versatileCounter, testword);
-    if (++versatileCounter >= getMessageLen(testword)*6) { versatileCounter = 0; }
+    if (++versatileCounter >= (getMessageLen(testword)*6)+8) { versatileCounter = -7; }
 }
 
 void initFiller(void) {
