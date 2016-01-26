@@ -4,7 +4,7 @@
 #define FILLERDELAY 100
 #define HORIZONTALSCROLL_DELAY  100
 
-uint8_t testword[20] = "Hackaday";
+uint8_t testword[20] = "Hackaday Belgrade";
 
 //State definitions
 typedef enum {
@@ -71,7 +71,7 @@ uint8_t getMessageLen(uint8_t *msg) {
     return i;
 }
 
-void showTextSlice(int8_t startSlice, uint8_t *msg) {
+void showTextSlice(int8_t startSlice, uint8_t vertOffset, uint8_t *msg) {
 
     uint8_t colLength = getMessageLen(msg)*6;
     
@@ -84,7 +84,7 @@ void showTextSlice(int8_t startSlice, uint8_t *msg) {
             ++startSlice;
             continue;
         }
-        uint8_t letter = testword[startSlice/6]-32;
+        uint8_t letter = msg[startSlice/6]-32;
         if (startSlice%6 == 5) { tempBuffer[i] = 0x00; }
         else {
             tempBuffer[i] = font5x8[(letter*5)+(startSlice%6)];
@@ -94,12 +94,12 @@ void showTextSlice(int8_t startSlice, uint8_t *msg) {
     
     //Push temp buffer to framebuffer
     for (uint8_t col=0; col<8; col++) {
-        for (uint8_t row=0; row<7; row++) {
+        for (uint8_t row=0; (row<7) && (row+vertOffset<16); row++) {
             if (tempBuffer[col] & 1<<row) {
-                writeBuffer(col, row, ON);
+                writeBuffer(col, row+vertOffset, ON);
             }
             else {
-                writeBuffer(col, row, OFF);
+                writeBuffer(col, row+vertOffset, OFF);
             }
         }
     }
@@ -116,7 +116,7 @@ void initHorizontalScroll(void) {
 
 void advanceHorizontalScroll(void) {
     triggerTime = getTime() + HORIZONTALSCROLL_DELAY;
-    showTextSlice(versatileCounter, testword);
+    showTextSlice(versatileCounter, 5, testword);
     if (++versatileCounter >= (getMessageLen(testword)*6)+8) { versatileCounter = -7; }
 }
 
@@ -259,7 +259,7 @@ void animateBadge(void) {
                 
                 putChar(2,2,getMessageLen(&testword)+16);
                 */
-                showTextSlice(43, testword);
+                showTextSlice(43, 0, testword);
                 showBuffer();
                 break;
             case (RIGHT):
