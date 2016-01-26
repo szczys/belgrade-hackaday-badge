@@ -23,16 +23,16 @@ uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
     
-uint8_t clearBuffer(void) {
+void clearBuffer(void) {
     for (uint8_t i=0; i<16; i++) { frameBuffer[i] = 0x00; }
 }
 
-uint8_t writeBuffer(uint8_t x, uint8_t y, uint8_t state) {
+void writeBuffer(uint8_t x, uint8_t y, uint8_t state) {
     if (state) { frameBuffer[y] |= 1<<x; }
     else { frameBuffer[y] &= ~(1<<x); }
 }
     
-uint8_t showBuffer(void) {
+void showBuffer(void) {
     for (uint8_t row=0; row<16; row++) {
         for (uint8_t col=0; col<8; col++) {
             if (frameBuffer[row] & 1<<col) { displayPixel(col, row, ON); }
@@ -42,7 +42,7 @@ uint8_t showBuffer(void) {
     displayLatch();
 }
 
-uint8_t putChar(uint8_t x, uint8_t y, uint8_t letter) {
+void putChar(uint8_t x, uint8_t y, uint8_t letter) {
     //H is 40
     for (uint8_t col=0; col<5; col++) {
         for (uint8_t row=0; row<7; row++) {
@@ -56,14 +56,18 @@ uint8_t putChar(uint8_t x, uint8_t y, uint8_t letter) {
     }
 }
 
-uint8_t showTextSlice(uint8_t startSlice) {
+uint8_t getMessageLen(uint8_t *msg) {
     //find length of string:
     uint8_t i;
     for (i=0; i<20; i++) {
-        if (testword[i] == 0) { break; }
+        if (*(msg+i) == 0) { break; }
     }
-    
-    uint8_t colLength = i*6;
+    return i;
+}
+
+void showTextSlice(uint8_t startSlice, uint8_t *msg) {
+
+    uint8_t colLength = getMessageLen(msg)*6;
     uint8_t colToWrite = 0;
     
     //Fill correct columns in temp buffer
@@ -139,7 +143,7 @@ void showHatching(void) {
 }
 
 void initChaser() {
-    displayClear();
+    clearBuffer();
     triggerTime = getTime();
     stateFlag = CHASER_STATE;
     for (uint8_t y=0; y<16; y++) {
@@ -226,9 +230,10 @@ void animateBadge(void) {
                 for (i=0; i<20; i++) {
                     if (testword[i] == 0) { break; }
                 } 
-                putChar(2,2,i+16);
+                
+                putChar(2,2,getMessageLen(&testword)+16);
                 */
-                showTextSlice(43);
+                showTextSlice(43, &testword);
                 showBuffer();
                 break;
             case (RIGHT):
