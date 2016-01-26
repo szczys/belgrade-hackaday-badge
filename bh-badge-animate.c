@@ -7,7 +7,6 @@ typedef enum {
     NO_STATE,
     FILLER_STATE,
     HATCHING_STATE,
-    SQUARE_STATE,
     CHASER_STATE
 };
 
@@ -36,7 +35,7 @@ uint8_t showBuffer(void) {
     displayLatch();
 }
 
-void startFiller(void) {
+void initFiller(void) {
     displayClear();
     triggerTime = getTime();
     stateFlag = FILLER_STATE;
@@ -64,6 +63,10 @@ void advanceFiller(void) {
     }
 }
 
+void initHatching(void) {
+    stateFlag = HATCHING_STATE;
+}
+
 void showHatching(void) {
     displayClear();
     for (uint8_t x=0; x<TOTPIXELX; x++) {
@@ -74,32 +77,23 @@ void showHatching(void) {
     displayLatch();
 }
 
-void showSquare(void) {
-    displayClear();
-    for (uint8_t x=2; x<6; x++) {
-        for (uint8_t y=6; y<10; y++) {
-            displayPixel(x, y, ON);
-        } 
-    }
-    displayLatch();
-}
-
 void initChaser() {
     displayClear();
     triggerTime = getTime();
     stateFlag = CHASER_STATE;
-    for (uint8_t y=0; y<15; y++) {
-        if (y%3 == 0) {
-            writeBuffer(0, y-1, ON);
+    for (uint8_t y=0; y<16; y++) {
+        if ((y/2)%2 == 0) {
+            writeBuffer(0, y, ON);
             writeBuffer(7, y, ON);
             //hack to do top and bottom
             if (y<7) {
-                writeBuffer(y+1, 0, ON);
-                writeBuffer(y, 14, ON);
+                writeBuffer(y+1, 15, ON);
             }
         }
     }
-
+    writeBuffer(3, 0, ON);
+    writeBuffer(4, 0, ON);
+    
     showBuffer();
 }
 
@@ -107,18 +101,16 @@ void advanceChaser() {
     //Preload trigger time for next round
     triggerTime = getTime() + FILLERDELAY;
     
-    //Chaser will only be in rows 0/14 and cols 0/7
-    
     //Save pixels which will be lost in shift
     uint8_t firstPix = (1<<0 & frameBuffer[0]);
-    uint8_t lastPix = (1<<7 & frameBuffer[14]);
+    uint8_t lastPix = (1<<7 & frameBuffer[15]);
     
     //Shift top and bottom rows
     frameBuffer[0] >>= 1;
-    frameBuffer[14] <<= 1;
+    frameBuffer[15] <<= 1;
     
     //Move left column down
-    for (uint8_t i=14; i>1; i--) {
+    for (uint8_t i=15; i>1; i--) {
         if (frameBuffer[i-1] & (1<<0)) { writeBuffer(0, i, ON); }
         else { writeBuffer(0, i, OFF); }
     }
@@ -127,19 +119,19 @@ void advanceChaser() {
     else { writeBuffer(0, 1, OFF); }
     
     //Move right column down
-    for (uint8_t i=0; i<13; i++) {
+    for (uint8_t i=0; i<14; i++) {
         if (frameBuffer[i+1] & (1<<7)) { writeBuffer(7, i, ON); }
         else { writeBuffer(7, i, OFF); }
     }
     //Fix lost pixel
-    if (lastPix) { writeBuffer(7, 13, ON); }
-    else { writeBuffer(7, 13, OFF); }
+    if (lastPix) { writeBuffer(7, 14, ON); }
+    else { writeBuffer(7, 14, OFF); }
         
     showBuffer();
 }
 
 void animateBadge(void) {
-    startFiller();
+    initFiller();
     while(1) {
         switch (stateFlag) {
             case FILLER_STATE:
@@ -151,9 +143,6 @@ void animateBadge(void) {
                 showHatching();
                 stateFlag = NO_STATE;
                 break;
-            case SQUARE_STATE:
-                showSquare();
-                stateFlag = NO_STATE;
             case CHASER_STATE:
                 if (getTime() >= triggerTime) {
                     advanceChaser();
@@ -165,13 +154,12 @@ void animateBadge(void) {
                 displayClose();
                 return;
             case (LEFT):
-                startFiller();
+                initFiller();
                 break;
             case (DOWN):
-                stateFlag = HATCHING_STATE;
+                initHatching();
                 break;
             case (RIGHT):
-                //stateFlag = SQUARE_STATE;
                 initChaser();
                 break;
         }
