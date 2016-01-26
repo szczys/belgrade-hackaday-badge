@@ -1,6 +1,9 @@
 #include "bh-badge.h"
+#include "font5x8.h"
 
 #define FILLERDELAY 100
+
+uint8_t testword[20] = "Hackaday";
 
 //State definitions
 typedef enum {
@@ -19,6 +22,10 @@ uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     };
+    
+uint8_t clearBuffer(void) {
+    for (uint8_t i=0; i<16; i++) { frameBuffer[i] = 0x00; }
+}
 
 uint8_t writeBuffer(uint8_t x, uint8_t y, uint8_t state) {
     if (state) { frameBuffer[y] |= 1<<x; }
@@ -33,6 +40,56 @@ uint8_t showBuffer(void) {
         }
     }
     displayLatch();
+}
+
+uint8_t putChar(uint8_t x, uint8_t y, uint8_t letter) {
+    //H is 40
+    for (uint8_t col=0; col<5; col++) {
+        for (uint8_t row=0; row<7; row++) {
+            if (font5x8[(letter*5)+col] & 1<<row) {
+                writeBuffer(col+x, row+y, ON);
+            }
+            else {
+                writeBuffer(col+x, row+y, OFF);
+            }
+        }
+    }
+}
+
+uint8_t showTextSlice(void) {
+    //find length of string:
+    uint8_t i;
+    for (i=0; i<20; i++) {
+        if (testword[i] == 0) { break; }
+    }
+    
+    uint8_t colLength = i*6;
+    
+    uint8_t startSlice = 3;
+    uint8_t colToWrite = 0;
+    
+    //Fill correct columns in temp buffer
+    uint8_t tempBuffer[8];
+    for (i=0; i<8; i++) {
+        uint8_t letter = testword[startSlice/6]-32;
+        if (startSlice%6 == 5) { tempBuffer[i] = 0x00; }
+        else {
+            tempBuffer[i] = font5x8[(letter*5)+(startSlice%6)];
+        }
+        ++startSlice;
+    }
+    
+    //Push temp buffer to framebuffer
+    for (uint8_t col=0; col<8; col++) {
+        for (uint8_t row=0; row<7; row++) {
+            if (tempBuffer[col] & 1<<row) {
+                writeBuffer(col, row, ON);
+            }
+            else {
+                writeBuffer(col, row, OFF);
+            }
+        }
+    }
 }
 
 void initFiller(void) {
@@ -157,7 +214,18 @@ void animateBadge(void) {
                 initFiller();
                 break;
             case (DOWN):
-                initHatching();
+                //initHatching();
+                stateFlag = NO_STATE;
+                clearBuffer();
+                /*
+                uint8_t i;
+                for (i=0; i<20; i++) {
+                    if (testword[i] == 0) { break; }
+                } 
+                putChar(2,2,i+16);
+                */
+                showTextSlice();
+                showBuffer();
                 break;
             case (RIGHT):
                 initChaser();
