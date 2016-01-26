@@ -106,6 +106,43 @@ void showTextSlice(int8_t startSlice, uint8_t vertOffset, uint8_t *msg) {
     showBuffer();
 }
 
+void showVertTextSlice(int8_t startSlice, uint8_t horizOffset, uint8_t *msg) {
+    //Show an 8x16 slice of our pessage for vertical scrolling
+    //Params:
+    //  startSlice: Where we are in the message (8 rows per character)
+    //  horizOffset: where the left edge of the letters will be
+    //  msg: Pointer to the array that stores the message
+
+    uint8_t rowLength = getMessageLen(msg)*8;
+    
+    //Fill correct columns in temp buffer
+    for (uint8_t i=0; i<16; i++) {
+        if ((startSlice>=rowLength) || (startSlice<0)) {
+            //Handle writing past the end of the last char
+            frameBuffer[i] = 0x00;
+            ++startSlice;
+            continue;
+        }
+        uint8_t letter = msg[startSlice/8]-32;
+        if (startSlice%8 == 7) { frameBuffer[i] = 0x00; }
+        else {
+            for (uint8_t j=0; j<5; j++) {
+                if (font5x8[(letter*5)+j] & (1<<startSlice%8))
+                {
+                    writeBuffer(j+horizOffset,i,ON);
+                }
+                else {
+                    writeBuffer(j+horizOffset,i,OFF);
+                }
+                //tempBuffer[i] = font5x8[(letter*5)+(startSlice%6)];
+            }
+        }
+        ++startSlice;
+    }
+
+    showBuffer();
+}
+
 void initHorizontalScroll(void) {
     versatileCounter = -7;
     clearBuffer();
@@ -259,7 +296,7 @@ void animateBadge(void) {
                 
                 putChar(2,2,getMessageLen(&testword)+16);
                 */
-                showTextSlice(43, 0, testword);
+                showVertTextSlice(8, 2, testword);
                 showBuffer();
                 break;
             case (RIGHT):
