@@ -8,7 +8,7 @@ typedef enum {
     FILLER_STATE,
     HATCHING_STATE,
     CHASER_STATE
-};
+} stateEnum;
 
 uint8_t i=0;
 uint8_t j=0;
