@@ -56,7 +56,7 @@ uint8_t putChar(uint8_t x, uint8_t y, uint8_t letter) {
     }
 }
 
-uint8_t showTextSlice(void) {
+uint8_t showTextSlice(uint8_t startSlice) {
     //find length of string:
     uint8_t i;
     for (i=0; i<20; i++) {
@@ -64,13 +64,17 @@ uint8_t showTextSlice(void) {
     }
     
     uint8_t colLength = i*6;
-    
-    uint8_t startSlice = 3;
     uint8_t colToWrite = 0;
     
     //Fill correct columns in temp buffer
     uint8_t tempBuffer[8];
     for (i=0; i<8; i++) {
+        if (startSlice>=colLength) {
+            //Handle writing past the end of the last char
+            tempBuffer[i] = 0x00;
+            ++startSlice;
+            continue;
+        }
         uint8_t letter = testword[startSlice/6]-32;
         if (startSlice%6 == 5) { tempBuffer[i] = 0x00; }
         else {
@@ -224,7 +228,7 @@ void animateBadge(void) {
                 } 
                 putChar(2,2,i+16);
                 */
-                showTextSlice();
+                showTextSlice(43);
                 showBuffer();
                 break;
             case (RIGHT):
