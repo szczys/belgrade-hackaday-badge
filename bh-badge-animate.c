@@ -20,7 +20,8 @@ uint8_t testword[20] = "Hackaday Belgrade";
 #define HORIZONTALSCROLL_STATE  4
 #define VERTICALSCROLL_STATE    5
 #define BOUNCEBALL_STATE        6
-#define TOTAL_NUMBER_OF_STATES  7
+#define BOUNCEPATTERN_STATE     7
+#define TOTAL_NUMBER_OF_STATES  8
 
 
 uint8_t versatile_i=0;
@@ -279,13 +280,15 @@ void advanceChaser() {
 uint8_t initBounceBall(void) {
     clearBuffer();
     stateFlag = BOUNCEBALL_STATE;
-    triggerTime = getTime();
+    triggerTime = getTime() + BOUNCEBALL_DELAY;
     versatile_i = 0;
     versatile_j = 0;
+    writeBuffer(versatile_i, versatile_j, ON);
     versatile_dirX = 1;
     versatile_dirY = 1;
+    showBuffer();
 }
-uint8_t advanceBounceBall(void) {
+uint8_t advanceBounceBall(uint8_t toggle) {
     triggerTime = getTime() + BOUNCEBALL_DELAY;
     
     uint8_t oldX = versatile_i;
@@ -318,10 +321,17 @@ uint8_t advanceBounceBall(void) {
         }
         else { --versatile_j; }
     }
-    //unset ball in buffer
-    writeBuffer(oldX, oldY, OFF);
-    //redraw ball in new loaction in buffer
-    writeBuffer(versatile_i, versatile_j, ON);
+
+    if (toggle) {
+        if (frameBuffer[versatile_j] & 1<<versatile_i) { writeBuffer(versatile_i, versatile_j, OFF); }
+        else { writeBuffer(versatile_i, versatile_j, ON); }
+    }
+    else {
+        //unset ball in buffer
+        writeBuffer(oldX, oldY, OFF);
+        //redraw ball in new loaction in buffer
+        writeBuffer(versatile_i, versatile_j, ON);
+    }
     //show buffer
     showBuffer();
 }
@@ -348,6 +358,10 @@ void advanceState(void) {
             break;
         case BOUNCEBALL_STATE:
             initBounceBall();
+            break;
+        case BOUNCEPATTERN_STATE:
+            initBounceBall();
+            stateFlag = BOUNCEPATTERN_STATE;
             break;
     }
 }
@@ -380,7 +394,12 @@ void animateBadge(void) {
                 break;
             case BOUNCEBALL_STATE:
                 if (getTime() >= triggerTime) {
-                    advanceBounceBall();
+                    advanceBounceBall(0);
+                }
+                break;
+            case BOUNCEPATTERN_STATE:
+                if (getTime() >= triggerTime) {
+                    advanceBounceBall(1);
                 }
                 break;
         }
