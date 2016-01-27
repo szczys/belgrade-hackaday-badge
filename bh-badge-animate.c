@@ -306,6 +306,7 @@ uint8_t initBounceBall(struct Balls* thisBall, uint8_t delay ) {
     thisBall->dirY = 1;
     showBuffer();
 }
+
 uint8_t advanceBounceBall(struct Balls* thisBall, uint8_t delay, uint8_t toggle) {
     thisBall->nextUpdate = getTime() + delay;
     
@@ -388,10 +389,6 @@ void initManyBouncers(void) {
     ball3.dirY = 1;
     
     showBuffer();
-}
-
-void advanceManyBouncers(void) {
-
 }
 
 void advanceState(void) {

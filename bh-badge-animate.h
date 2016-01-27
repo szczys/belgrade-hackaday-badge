@@ -1,5 +1,7 @@
 #include "bh-badge.h"
 
+struct Balls;
+
 void clearBuffer(void);
 void writeBuffer(uint8_t x, uint8_t y, uint8_t state);
 void showBuffer(void);
@@ -16,4 +18,8 @@ void initHatching(void);
 void showHatching(void);
 void initChaser();
 void advanceChaser();
+uint8_t initBounceBall(struct Balls* thisBall, uint8_t delay );
+uint8_t advanceBounceBall(struct Balls* thisBall, uint8_t delay, uint8_t toggle);
+void initManyBouncers(void);
+void advanceState(void);
 void animateBadge(void);
