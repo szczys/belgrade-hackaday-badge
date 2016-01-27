@@ -4,6 +4,11 @@
 #define FILLERDELAY 100
 #define HORIZONTALSCROLL_DELAY  100
 #define VERTICALSCROLL_DELAY  100
+#define BOUNCEBALL_DELAY    100
+
+#define SCREENPIXELS_X  8
+#define SCREENPIXELS_Y  16
+
 
 uint8_t testword[20] = "Hackaday Belgrade";
 
@@ -14,11 +19,14 @@ uint8_t testword[20] = "Hackaday Belgrade";
 #define CHASER_STATE            3
 #define HORIZONTALSCROLL_STATE  4
 #define VERTICALSCROLL_STATE    5
-#define TOTAL_NUMBER_OF_STATES  6
+#define BOUNCEBALL_STATE        6
+#define TOTAL_NUMBER_OF_STATES  7
 
 
-uint8_t filler_i=0;
-uint8_t filler_j=0;
+uint8_t versatile_i=0;
+uint8_t versatile_j=0;
+uint8_t versatile_dirX = 1;
+uint8_t versatile_dirY = 1;
 
 uint32_t triggerTime = 0;
 uint8_t stateFlag = NO_STATE;
@@ -177,8 +185,8 @@ void initFiller(void) {
     displayClear();
     triggerTime = getTime();
     stateFlag = FILLER_STATE;
-    filler_i=0;
-    filler_j=0;
+    versatile_i=0;
+    versatile_j=0;
 }
 
 void advanceFiller(void) {
@@ -186,17 +194,17 @@ void advanceFiller(void) {
     triggerTime = getTime() + FILLERDELAY;
     
     //Manipulate the display
-    displayPixel(filler_i,filler_j,ON);
+    displayPixel(versatile_i,versatile_j,ON);
     displayLatch();
     
     //Advance tracking for next round
-    if (++filler_i >= TOTPIXELX) {
-        filler_i = 0;
-        ++filler_j;
+    if (++versatile_i >= TOTPIXELX) {
+        versatile_i = 0;
+        ++versatile_j;
     } 
     
     //Check to see if we've overflowed
-    if (filler_j >= TOTPIXELY) {
+    if (versatile_j >= TOTPIXELY) {
         stateFlag = NO_STATE;
     }
 }
@@ -268,6 +276,56 @@ void advanceChaser() {
     showBuffer();
 }
 
+uint8_t initBounceBall(void) {
+    clearBuffer();
+    stateFlag = BOUNCEBALL_STATE;
+    triggerTime = getTime();
+    versatile_i = 0;
+    versatile_j = 0;
+    versatile_dirX = 1;
+    versatile_dirY = 1;
+}
+uint8_t advanceBounceBall(void) {
+    triggerTime = getTime() + BOUNCEBALL_DELAY;
+    
+    uint8_t oldX = versatile_i;
+    uint8_t oldY = versatile_j;
+    
+    //move ball
+    if (versatile_dirX) {
+        if (++versatile_i >= SCREENPIXELS_X) {
+            versatile_dirX = 0;
+            versatile_i -= 2;
+        }
+    }
+    else {
+        if (versatile_i == 0) {
+            versatile_dirX = 1;
+            ++versatile_i;
+        }
+        else { --versatile_i; }
+    }
+    if (versatile_dirY) {
+        if (++versatile_j >= SCREENPIXELS_Y) {
+            versatile_dirY = 0;
+            versatile_j -= 2;
+        }
+    }
+    else {
+        if (versatile_j == 0) {
+            versatile_dirY = 1;
+            ++versatile_j;
+        }
+        else { --versatile_j; }
+    }
+    //unset ball in buffer
+    writeBuffer(oldX, oldY, OFF);
+    //redraw ball in new loaction in buffer
+    writeBuffer(versatile_i, versatile_j, ON);
+    //show buffer
+    showBuffer();
+}
+
 void advanceState(void) {
     //Increments to the next state
     if(++stateFlag >= TOTAL_NUMBER_OF_STATES) { stateFlag = 1; }
@@ -287,6 +345,9 @@ void advanceState(void) {
             break;
         case VERTICALSCROLL_STATE:
             initVerticalScroll();
+            break;
+        case BOUNCEBALL_STATE:
+            initBounceBall();
             break;
     }
 }
@@ -315,6 +376,11 @@ void animateBadge(void) {
             case VERTICALSCROLL_STATE:
                 if (getTime() >= triggerTime) {
                     advanceVerticalScroll();
+                }
+                break;
+            case BOUNCEBALL_STATE:
+                if (getTime() >= triggerTime) {
+                    advanceBounceBall();
                 }
                 break;
         }
