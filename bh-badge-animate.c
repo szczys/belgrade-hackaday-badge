@@ -124,6 +124,7 @@ void showVertTextSlice(int8_t startSlice, uint8_t horizOffset, uint8_t *msg) {
             continue;
         }
         uint8_t letter = msg[startSlice/8]-32;
+        if (67 <= letter <= 90) { letter -= 32; }
         if (startSlice%8 == 7) { frameBuffer[i] = 0x00; }
         else {
             for (uint8_t j=0; j<5; j++) {
