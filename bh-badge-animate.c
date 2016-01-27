@@ -21,7 +21,8 @@ uint8_t testword[20] = "Hackaday Belgrade";
 #define VERTICALSCROLL_STATE    5
 #define BOUNCEBALL_STATE        6
 #define BOUNCEPATTERN_STATE     7
-#define TOTAL_NUMBER_OF_STATES  8
+#define MANYBOUNCERS_STATE      8
+#define TOTAL_NUMBER_OF_STATES  9
 
 
 uint8_t versatile_i=0;
@@ -33,6 +34,16 @@ uint32_t triggerTime = 0;
 uint8_t stateFlag = NO_STATE;
 
 int16_t versatileCounter = 0;   //This may be used by any function
+
+typedef struct Balls {
+    uint8_t x;
+    uint8_t y;
+    uint8_t dirX;
+    uint8_t dirY;
+    uint32_t nextUpdate;
+} Ball;
+
+Ball ball0;
 
 uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -277,60 +288,60 @@ void advanceChaser() {
     showBuffer();
 }
 
-uint8_t initBounceBall(void) {
+uint8_t initBounceBall(struct Balls* thisBall, uint8_t delay ) {
     clearBuffer();
     stateFlag = BOUNCEBALL_STATE;
-    triggerTime = getTime() + BOUNCEBALL_DELAY;
-    versatile_i = 0;
-    versatile_j = 0;
-    writeBuffer(versatile_i, versatile_j, ON);
-    versatile_dirX = 1;
-    versatile_dirY = 1;
+    thisBall->nextUpdate = getTime() + delay;
+    thisBall->x = 0;
+    thisBall->y = 0;
+    writeBuffer(thisBall->x, thisBall->y, ON);
+    thisBall->dirX = 1;
+    thisBall->dirY = 1;
     showBuffer();
 }
-uint8_t advanceBounceBall(uint8_t toggle) {
-    triggerTime = getTime() + BOUNCEBALL_DELAY;
+uint8_t advanceBounceBall(struct Balls* thisBall, uint8_t delay, uint8_t toggle) {
+    thisBall->nextUpdate = getTime() + delay;
     
-    uint8_t oldX = versatile_i;
-    uint8_t oldY = versatile_j;
+    uint8_t oldX = thisBall->x;
+    uint8_t oldY = thisBall->y;
     
     //move ball
-    if (versatile_dirX) {
-        if (++versatile_i >= SCREENPIXELS_X) {
-            versatile_dirX = 0;
-            versatile_i -= 2;
+    if (thisBall->dirX) {
+        if (++thisBall->x >= SCREENPIXELS_X) {
+            thisBall->dirX = 0;
+            thisBall->x -= 2;
         }
     }
     else {
-        if (versatile_i == 0) {
-            versatile_dirX = 1;
-            ++versatile_i;
+        if (thisBall->x == 0) {
+            thisBall->dirX = 1;
+            ++thisBall->x;
         }
-        else { --versatile_i; }
+        else { --thisBall->x; }
     }
-    if (versatile_dirY) {
-        if (++versatile_j >= SCREENPIXELS_Y) {
-            versatile_dirY = 0;
-            versatile_j -= 2;
+    if (thisBall->dirY) {
+        if (++thisBall->y >= SCREENPIXELS_Y) {
+            thisBall->dirY = 0;
+            thisBall->y -= 2;
         }
     }
     else {
-        if (versatile_j == 0) {
-            versatile_dirY = 1;
-            ++versatile_j;
+        if (thisBall->y == 0) {
+            thisBall->dirY = 1;
+            ++thisBall->y;
         }
-        else { --versatile_j; }
+        else { --thisBall->y; }
     }
 
     if (toggle) {
-        if (frameBuffer[versatile_j] & 1<<versatile_i) { writeBuffer(versatile_i, versatile_j, OFF); }
-        else { writeBuffer(versatile_i, versatile_j, ON); }
+        if (frameBuffer[thisBall->y] & 1<<thisBall->x) { writeBuffer(thisBall->x, thisBall->y, OFF); }
+        else { writeBuffer(thisBall->x, thisBall->y, ON); }
     }
     else {
         //unset ball in buffer
         writeBuffer(oldX, oldY, OFF);
         //redraw ball in new loaction in buffer
-        writeBuffer(versatile_i, versatile_j, ON);
+        writeBuffer(thisBall->x, thisBall->y, ON);
     }
     //show buffer
     showBuffer();
@@ -357,10 +368,10 @@ void advanceState(void) {
             initVerticalScroll();
             break;
         case BOUNCEBALL_STATE:
-            initBounceBall();
+            initBounceBall(&ball0, BOUNCEBALL_DELAY);
             break;
         case BOUNCEPATTERN_STATE:
-            initBounceBall();
+            initBounceBall(&ball0, BOUNCEBALL_DELAY);
             stateFlag = BOUNCEPATTERN_STATE;
             break;
     }
@@ -393,13 +404,13 @@ void animateBadge(void) {
                 }
                 break;
             case BOUNCEBALL_STATE:
-                if (getTime() >= triggerTime) {
-                    advanceBounceBall(0);
+                if (getTime() >= ball0.nextUpdate) {
+                    advanceBounceBall(&ball0, BOUNCEBALL_DELAY, 0);
                 }
                 break;
             case BOUNCEPATTERN_STATE:
-                if (getTime() >= triggerTime) {
-                    advanceBounceBall(1);
+                if (getTime() >= ball0.nextUpdate) {
+                    advanceBounceBall(&ball0, BOUNCEBALL_DELAY, 1);
                 }
                 break;
         }
