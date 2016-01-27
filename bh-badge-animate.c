@@ -5,6 +5,10 @@
 #define HORIZONTALSCROLL_DELAY  100
 #define VERTICALSCROLL_DELAY  100
 #define BOUNCEBALL_DELAY    100
+#define MANY0_DELAY         100
+#define MANY1_DELAY         80
+#define MANY2_DELAY         120
+#define MANY3_DELAY         60
 
 #define SCREENPIXELS_X  8
 #define SCREENPIXELS_Y  16
@@ -44,6 +48,9 @@ typedef struct Balls {
 } Ball;
 
 Ball ball0;
+Ball ball1;
+Ball ball2;
+Ball ball3;
 
 uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -347,6 +354,46 @@ uint8_t advanceBounceBall(struct Balls* thisBall, uint8_t delay, uint8_t toggle)
     showBuffer();
 }
 
+void initManyBouncers(void) {
+    clearBuffer();
+    stateFlag = MANYBOUNCERS_STATE;
+    
+    ball0.nextUpdate = getTime() + MANY0_DELAY;
+    ball1.nextUpdate = getTime() + MANY1_DELAY;
+    ball2.nextUpdate = getTime() + MANY2_DELAY;
+    ball3.nextUpdate = getTime() + MANY3_DELAY;
+    
+    ball0.x = 0;
+    ball0.y = 0;
+    writeBuffer(ball0.x, ball0.y, ON);
+    ball0.dirX = 1;
+    ball0.dirY = 1;
+    
+    ball1.x = 4;
+    ball1.y = 14;
+    writeBuffer(ball1.x, ball1.y, ON);
+    ball1.dirX = 0;
+    ball1.dirY = 1;
+    
+    ball2.x = 3;
+    ball2.y = 6;
+    writeBuffer(ball2.x, ball2.y, ON);
+    ball2.dirX = 1;
+    ball2.dirY = 0;
+    
+    ball3.x = 6;
+    ball3.y = 9;
+    writeBuffer(ball3.x, ball3.y, ON);
+    ball3.dirX = 1;
+    ball3.dirY = 1;
+    
+    showBuffer();
+}
+
+void advanceManyBouncers(void) {
+
+}
+
 void advanceState(void) {
     //Increments to the next state
     if(++stateFlag >= TOTAL_NUMBER_OF_STATES) { stateFlag = 1; }
@@ -373,6 +420,10 @@ void advanceState(void) {
         case BOUNCEPATTERN_STATE:
             initBounceBall(&ball0, BOUNCEBALL_DELAY);
             stateFlag = BOUNCEPATTERN_STATE;
+            break;
+        case MANYBOUNCERS_STATE:
+            initManyBouncers();
+            stateFlag = MANYBOUNCERS_STATE;
             break;
     }
 }
@@ -411,6 +462,20 @@ void animateBadge(void) {
             case BOUNCEPATTERN_STATE:
                 if (getTime() >= ball0.nextUpdate) {
                     advanceBounceBall(&ball0, BOUNCEBALL_DELAY, 1);
+                }
+                break;
+            case MANYBOUNCERS_STATE:
+                if (getTime() >= ball0.nextUpdate) {
+                    advanceBounceBall(&ball0, MANY0_DELAY, 0);
+                }
+                if (getTime() >= ball1.nextUpdate) {
+                    advanceBounceBall(&ball1, MANY1_DELAY, 0);
+                }
+                if (getTime() >= ball2.nextUpdate) {
+                    advanceBounceBall(&ball2, MANY2_DELAY, 0);
+                }
+                if (getTime() >= ball3.nextUpdate) {
+                    advanceBounceBall(&ball3, MANY3_DELAY, 0);
                 }
                 break;
         }
