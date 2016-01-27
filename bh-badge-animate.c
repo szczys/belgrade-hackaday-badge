@@ -3,6 +3,7 @@
 
 #define FILLERDELAY 100
 #define HORIZONTALSCROLL_DELAY  100
+#define VERTICALSCROLL_DELAY  100
 
 uint8_t testword[20] = "Hackaday Belgrade";
 
@@ -12,7 +13,8 @@ typedef enum {
     FILLER_STATE,
     HATCHING_STATE,
     CHASER_STATE,
-    HORIZONTALSCROLL_STATE
+    HORIZONTALSCROLL_STATE,
+    VERTICALSCROLL_STATE
 } stateEnum;
 
 
@@ -22,7 +24,7 @@ uint8_t filler_j=0;
 uint32_t triggerTime = 0;
 uint8_t stateFlag = NO_STATE;
 
-int8_t versatileCounter = 0;   //This may be used by any function
+int16_t versatileCounter = 0;   //This may be used by any function
 
 uint8_t frameBuffer[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -71,7 +73,7 @@ uint8_t getMessageLen(uint8_t *msg) {
     return i;
 }
 
-void showTextSlice(int8_t startSlice, uint8_t vertOffset, uint8_t *msg) {
+void showTextSlice(int16_t startSlice, uint8_t vertOffset, uint8_t *msg) {
 
     uint8_t colLength = getMessageLen(msg)*6;
     
@@ -106,7 +108,7 @@ void showTextSlice(int8_t startSlice, uint8_t vertOffset, uint8_t *msg) {
     showBuffer();
 }
 
-void showVertTextSlice(int8_t startSlice, uint8_t horizOffset, uint8_t *msg) {
+void showVertTextSlice(int16_t startSlice, uint8_t horizOffset, uint8_t *msg) {
     //Show an 8x16 slice of our pessage for vertical scrolling
     //Params:
     //  startSlice: Where we are in the message (8 rows per character)
@@ -124,7 +126,8 @@ void showVertTextSlice(int8_t startSlice, uint8_t horizOffset, uint8_t *msg) {
             continue;
         }
         uint8_t letter = msg[startSlice/8]-32;
-        if (67 <= letter <= 90) { letter -= 32; }
+        //Force uppercase otherwise vert scrolling has too many spaced betten characters
+        if ((65 <= letter) && (letter <= 90)) { letter -= 32; }
         if (startSlice%8 == 7) { frameBuffer[i] = 0x00; }
         else {
             for (uint8_t j=0; j<5; j++) {
@@ -135,7 +138,6 @@ void showVertTextSlice(int8_t startSlice, uint8_t horizOffset, uint8_t *msg) {
                 else {
                     writeBuffer(j+horizOffset,i,OFF);
                 }
-                //tempBuffer[i] = font5x8[(letter*5)+(startSlice%6)];
             }
         }
         ++startSlice;
@@ -156,6 +158,20 @@ void advanceHorizontalScroll(void) {
     triggerTime = getTime() + HORIZONTALSCROLL_DELAY;
     showTextSlice(versatileCounter, 5, testword);
     if (++versatileCounter >= (getMessageLen(testword)*6)+8) { versatileCounter = -7; }
+}
+
+void initVerticalScroll(void) {
+    versatileCounter = -7;
+    clearBuffer();
+    triggerTime = getTime();
+    stateFlag = VERTICALSCROLL_STATE;
+    showBuffer();
+}
+
+void advanceVerticalScroll(void) {
+    triggerTime = getTime() + VERTICALSCROLL_DELAY;
+    showVertTextSlice(versatileCounter, 2, testword);
+    if (++versatileCounter >= (getMessageLen(testword)*8)+16) { versatileCounter = -16; }
 }
 
 void initFiller(void) {
@@ -276,6 +292,11 @@ void animateBadge(void) {
                     advanceHorizontalScroll();
                 }
                 break;
+            case VERTICALSCROLL_STATE:
+                if (getTime() >= triggerTime) {
+                    advanceVerticalScroll();
+                }
+                break;
         }
         switch (getControl()) {
             case (ESCAPE):
@@ -286,19 +307,7 @@ void animateBadge(void) {
                 initHorizontalScroll();
                 break;
             case (DOWN):
-                //initHatching();
-                stateFlag = NO_STATE;
-                clearBuffer();
-                /*
-                uint8_t i;
-                for (i=0; i<20; i++) {
-                    if (testword[i] == 0) { break; }
-                } 
-                
-                putChar(2,2,getMessageLen(&testword)+16);
-                */
-                showVertTextSlice(8, 2, testword);
-                showBuffer();
+                initVerticalScroll();
                 break;
             case (RIGHT):
                 initChaser();
