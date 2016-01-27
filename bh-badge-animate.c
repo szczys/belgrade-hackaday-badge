@@ -8,14 +8,13 @@
 uint8_t testword[20] = "Hackaday Belgrade";
 
 //State definitions
-typedef enum {
-    NO_STATE,
-    FILLER_STATE,
-    HATCHING_STATE,
-    CHASER_STATE,
-    HORIZONTALSCROLL_STATE,
-    VERTICALSCROLL_STATE
-} stateEnum;
+#define NO_STATE                0
+#define FILLER_STATE            1
+#define HATCHING_STATE          2
+#define CHASER_STATE            3
+#define HORIZONTALSCROLL_STATE  4
+#define VERTICALSCROLL_STATE    5
+#define TOTAL_NUMBER_OF_STATES  6
 
 
 uint8_t filler_i=0;
@@ -269,6 +268,29 @@ void advanceChaser() {
     showBuffer();
 }
 
+void advanceState(void) {
+    //Increments to the next state
+    if(++stateFlag >= TOTAL_NUMBER_OF_STATES) { stateFlag = 1; }
+    
+    switch (stateFlag) {
+        case FILLER_STATE:
+            initFiller();
+            break;
+        case HATCHING_STATE:
+            showHatching();
+            break;
+        case CHASER_STATE:
+            initChaser();
+            break;
+        case HORIZONTALSCROLL_STATE:
+            initHorizontalScroll();
+            break;
+        case VERTICALSCROLL_STATE:
+            initVerticalScroll();
+            break;
+    }
+}
+
 void animateBadge(void) {
     initFiller();
     while(1) {
@@ -279,8 +301,6 @@ void animateBadge(void) {
                 }
                 break;
             case HATCHING_STATE:
-                showHatching();
-                stateFlag = NO_STATE;
                 break;
             case CHASER_STATE:
                 if (getTime() >= triggerTime) {
@@ -303,8 +323,7 @@ void animateBadge(void) {
                 displayClose();
                 return;
             case (LEFT):
-                //initFiller();
-                initHorizontalScroll();
+                advanceState();
                 break;
             case (DOWN):
                 initVerticalScroll();
