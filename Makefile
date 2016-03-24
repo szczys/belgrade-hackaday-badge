@@ -3,13 +3,13 @@ test:
 	make run;
 
 build:
-	gcc -std=c99 -c bh-badge.c bh-badge-animate.c;
-	gcc bh-badge.o bh-badge-animate.o -o bh-badge -lSDL2 -lSDL2_gfx;
+	gcc -std=c99 -c HaD_Badge.c bh-badge-animate.c;
+	gcc HaD_Badge.o bh-badge-animate.o -o HaD_Badge -lSDL2 -lSDL2_gfx;
 
 run:
-	./bh-badge;
+	./HaD_Badge;
 
 clean:
-	-rm bh-badge;
+	-rm HaD_Badge;
 	-rm *.o;
 	-rm *~

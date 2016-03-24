@@ -3,6 +3,8 @@
 #define TOTPIXELX       8
 #define TOTPIXELY       16
 
+extern uint8_t Buffer[16];
+
 //LED Control definitions
 #define OFF     0
 #define ON      1
