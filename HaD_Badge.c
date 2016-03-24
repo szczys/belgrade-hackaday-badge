@@ -106,7 +106,6 @@ void showSDLpixel(uint8_t x, uint8_t y, uint8_t state){
 }
 
 void displayLatch(void) {
-    printf("displayLatch");
     //In hardware, this is taken care of in an interrupt
     //But is needed here for SDL to show our buffer
     for (uint8_t row=0; row<16; row++) {
